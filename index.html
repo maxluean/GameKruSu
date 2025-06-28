@@ -35,10 +35,13 @@
         <div class="parchment p-8 text-center rounded-lg">
             <h1 class="font-cinzel text-4xl font-bold text-amber-900 mb-2">คัมภีร์นักแปรธาตุ</h1>
             <p class="text-amber-800/80 mb-8">จงพิสูจน์ตัวตนเพื่อเริ่มการท้าทาย</p>
-            <button id="login-button" class="btn-alchemist flex items-center justify-center gap-3 w-full p-4 rounded-lg text-xl font-bold">
-                <svg class="w-6 h-6" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C42.021,35.591,44,30.138,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
-                <span>ลงชื่อเข้าใช้ด้วย Google</span>
-            </button>
+            <form id="login-form" class="space-y-4">
+                <input id="email-input" type="email" required placeholder="อีเมล" class="w-full p-3 rounded-lg border border-amber-800/30 text-lg text-black" />
+                <input id="password-input" type="password" required placeholder="รหัสผ่าน" class="w-full p-3 rounded-lg border border-amber-800/30 text-lg text-black" />
+                <button type="submit" class="btn-alchemist w-full p-4 rounded-lg text-xl font-bold">เข้าสู่ระบบ</button>
+            </form>
+            <button id="register-button" class="w-full mt-2 p-2 rounded-lg text-amber-800 hover:bg-amber-800/10">สมัครสมาชิกใหม่</button>
+            <p id="login-error" class="text-red-600 mt-2"></p>
         </div>
     </div>
 
@@ -100,9 +103,9 @@
     <!-- Firebase SDK -->
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, collection, query, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-    
+
     const firebaseConfig = {
         apiKey: "AIzaSyByDV8O_jBOE4dFzBifTa-ld2w7l9RcXgI",
         authDomain: "mathgamedata.firebaseapp.com",
@@ -118,7 +121,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const authProvider = new GoogleAuthProvider();
 
     // --- GAME DATA ---
     const questions = [
@@ -156,15 +158,17 @@
     const gameContainer = document.getElementById('game-container');
     const leaderboardModal = document.getElementById('leaderboard-modal');
     const gameOverModal = document.getElementById('game-over-modal');
-    // Buttons
-    const loginButton = document.getElementById('login-button');
+    const loginForm = document.getElementById('login-form');
+    const emailInput = document.getElementById('email-input');
+    const passwordInput = document.getElementById('password-input');
+    const registerButton = document.getElementById('register-button');
+    const loginError = document.getElementById('login-error');
     const logoutButton = document.getElementById('logout-button');
     const startChallengeButton = document.getElementById('start-challenge-button');
     const dashboardLeaderboardButton = document.getElementById('dashboard-leaderboard-button');
     const closeLeaderboardButton = document.getElementById('close-leaderboard-button');
     const playAgainButton = document.getElementById('play-again-button');
     const backToDashboardButton = document.getElementById('back-to-dashboard-button');
-    // Displays
     const welcomeMessage = document.getElementById('welcome-message');
     const bestTimeDisplay = document.getElementById('best-time-display');
     const questionCounter = document.getElementById('question-counter');
@@ -179,7 +183,7 @@
     // --- AUTHENTICATION ---
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            state.user = { uid: user.uid, name: user.displayName };
+            state.user = { uid: user.uid, name: user.email };
             await fetchBestTime();
             showScreen('dashboard');
         } else {
@@ -188,15 +192,44 @@
         }
     });
 
-    const handleGoogleLogin = async () => {
-        try { await signInWithPopup(auth, authProvider); } 
-        catch (error) { console.error("Login failed:", error); }
-    };
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        loginError.textContent = "";
+        try {
+            await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+        } catch (error) {
+            if (error.code === "auth/user-not-found") {
+                loginError.textContent = "ไม่พบผู้ใช้งานนี้";
+            } else if (error.code === "auth/wrong-password") {
+                loginError.textContent = "รหัสผ่านไม่ถูกต้อง";
+            } else {
+                loginError.textContent = "เข้าสู่ระบบล้มเหลว";
+            }
+        }
+    });
 
-    const handleLogout = async () => {
+    registerButton.addEventListener('click', async () => {
+        loginError.textContent = "";
+        try {
+            await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+            loginError.textContent = "สมัครสมาชิกสำเร็จ! กรุณากดเข้าสู่ระบบอีกครั้ง";
+        } catch (error) {
+            if (error.code === "auth/email-already-in-use") {
+                loginError.textContent = "อีเมลนี้ถูกใช้แล้ว";
+            } else if (error.code === "auth/invalid-email") {
+                loginError.textContent = "อีเมลไม่ถูกต้อง";
+            } else if (error.code === "auth/weak-password") {
+                loginError.textContent = "รหัสผ่านควรมีอย่างน้อย 6 ตัวอักษร";
+            } else {
+                loginError.textContent = "สมัครสมาชิกไม่สำเร็จ";
+            }
+        }
+    });
+
+    logoutButton.addEventListener('click', async () => {
         try { await signOut(auth); } 
         catch (error) { console.error("Logout failed:", error); }
-    };
+    });
 
     // --- UI & SCREEN MANAGEMENT ---
     function showScreen(screenName) {
