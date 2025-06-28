@@ -231,112 +231,6 @@
         catch (error) { console.error("Logout failed:", error); }
     });
 
-    // --- UI & SCREEN MANAGEMENT ---
-    function showScreen(screenName) {
-        [loginScreen, dashboardScreen, gameContainer, gameOverModal].forEach(s => s.style.display = 'none');
-        if (screenName === 'login') loginScreen.style.display = 'block';
-        if (screenName === 'dashboard') {
-            welcomeMessage.textContent = `ยินดีต้อนรับ, ${state.user.name}`;
-            bestTimeDisplay.textContent = state.bestTime ? `${state.bestTime.toFixed(2)} วินาที` : 'ยังไม่มีสถิติ';
-            dashboardScreen.style.display = 'block';
-        }
-        if (screenName === 'game') gameContainer.style.display = 'block';
-        if (screenName === 'gameOver') gameOverModal.style.display = 'flex';
-    }
-
-    // --- GAME LOGIC ---
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-    function startChallenge() {
-        state.currentQuestionNumber = 1;
-        // Create a 10-question challenge with increasing difficulty
-        const l1 = shuffleArray(questions.filter(q => q.level === 1)).slice(0, 3);
-        const l2 = shuffleArray(questions.filter(q => q.level === 2)).slice(0, 3);
-        const l3 = shuffleArray(questions.filter(q => q.level === 3)).slice(0, 2);
-        const l4 = shuffleArray(questions.filter(q => q.level === 4)).slice(0, 2);
-        state.challengeQuestions = shuffleArray([...l1, ...l2, ...l3, ...l4]);
-        
-        state.gameStartTime = Date.now();
-        state.timerInterval = setInterval(() => {
-            const elapsed = (Date.now() - state.gameStartTime) / 1000;
-            timerDisplay.textContent = elapsed.toFixed(1);
-        }, 100);
-        
-        showScreen('game');
-        loadQuestion();
-    }
-
-    function loadQuestion() {
-        feedbackMessage.textContent = '';
-        document.getElementById('game-board').classList.remove('incorrect-answer', 'correct-answer');
-        
-        const question = state.challengeQuestions[state.currentQuestionNumber - 1];
-        questionCounter.textContent = `ข้อที่: ${state.currentQuestionNumber}/10`;
-        structureText.textContent = question.structureText;
-
-        // Generate choices
-        choicesWrapper.innerHTML = '';
-        const allAnswers = questions.map(q => q.answer);
-        let choices = [question.answer];
-        while (choices.length < 4) {
-            const randomAnswer = allAnswers[Math.floor(Math.random() * allAnswers.length)];
-            if (!choices.includes(randomAnswer)) {
-                choices.push(randomAnswer);
-            }
-        }
-        
-        shuffleArray(choices).forEach(choice => {
-            const button = document.createElement('button');
-            button.textContent = choice;
-            button.className = 'btn-alchemist p-3 rounded-lg text-lg';
-            button.onclick = () => checkAnswer(choice);
-            choicesWrapper.appendChild(button);
-        });
-    }
-
-    function checkAnswer(userAnswer) {
-        const correctAnswer = state.challengeQuestions[state.currentQuestionNumber - 1].answer;
-        const gameBoard = document.getElementById('game-board');
-
-        if (userAnswer === correctAnswer) {
-            gameBoard.classList.add('correct-answer');
-            state.currentQuestionNumber++;
-            
-            setTimeout(() => {
-                if (state.currentQuestionNumber > 10) {
-                    endGame();
-                } else {
-                    loadQuestion();
-                }
-            }, 1000);
-        } else {
-            gameBoard.classList.add('incorrect-answer');
-        }
-    }
-
-    async function endGame() {
-        clearInterval(state.timerInterval);
-        const totalTime = (Date.now() - state.gameStartTime) / 1000;
-        
-        finalTimeDisplay.textContent = `${totalTime.toFixed(2)} วินาที`;
-        
-        if (!state.bestTime || totalTime < state.bestTime) {
-            newBestTimeMessage.textContent = "ทำลายสถิติใหม่!";
-            state.bestTime = totalTime;
-            await saveBestTime(totalTime);
-        } else {
-            newBestTimeMessage.textContent = "";
-        }
-        
-        showScreen('gameOver');
-    }
-
     // --- FIRESTORE FUNCTIONS ---
     async function fetchBestTime() {
         if (!state.user) return;
@@ -359,7 +253,7 @@
         const docRef = doc(db, `artifacts/${appId}/public/data/leaderboard`, state.user.uid);
         try {
             await setDoc(docRef, {
-                name: state.user.name,
+                name: state.user.name, // ใช้ email เป็นชื่อ
                 bestTimeSeconds: time
             });
         } catch (error) {
@@ -367,36 +261,7 @@
         }
     }
 
-    async function displayLeaderboard() {
-        leaderboardList.innerHTML = '<p class="text-center text-amber-900/70">กำลังโหลด...</p>';
-        leaderboardModal.style.display = 'flex';
-        const leaderboardCollection = `artifacts/${appId}/public/data/leaderboard`;
-        try {
-            const q = query(collection(db, leaderboardCollection), orderBy("bestTimeSeconds", "asc"));
-            const querySnapshot = await getDocs(q);
-            let scores = [];
-            querySnapshot.forEach((doc) => { scores.push(doc.data()); });
-            
-            leaderboardList.innerHTML = '';
-            if (scores.length === 0) {
-                leaderboardList.innerHTML = '<p class="text-center text-amber-900/70">ยังไม่มีปรมาจารย์ในหอแห่งนี้</p>';
-                return;
-            }
-            scores.slice(0, 10).forEach((entry, index) => {
-                const entryDiv = document.createElement('div');
-                entryDiv.className = 'flex justify-between items-center p-2 rounded-md';
-                entryDiv.innerHTML = `<span class="font-bold text-amber-900">${index + 1}. ${entry.name}</span><span class="font-code font-bold text-amber-800">${entry.bestTimeSeconds.toFixed(2)} วิ</span>`;
-                leaderboardList.appendChild(entryDiv);
-            });
-        } catch (error) {
-            console.error("Error fetching leaderboard:", error);
-            leaderboardList.innerHTML = '<p class="text-center text-red-600">ไม่สามารถโหลดข้อมูลได้</p>';
-        }
-    }
-
     // --- EVENT LISTENERS ---
-    loginButton.addEventListener('click', handleGoogleLogin);
-    logoutButton.addEventListener('click', handleLogout);
     startChallengeButton.addEventListener('click', startChallenge);
     dashboardLeaderboardButton.addEventListener('click', displayLeaderboard);
     closeLeaderboardButton.addEventListener('click', () => { leaderboardModal.style.display = 'none'; });
