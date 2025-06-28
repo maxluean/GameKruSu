@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คัมภีร์นักแปรธาตุ: ศึกประลองความเร็ว</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts for Thematic Look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Sans+Thai:wght@400;500&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Noto Sans Thai', sans-serif; background-image: url('https://www.transparenttextures.com/patterns/dark-leather.png'); background-color: #1a1a1a; color: #e0dcd1; }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        .font-code { font-family: 'Source Code Pro', monospace; }
+        .parchment { background-image: url('https://www.transparenttextures.com/patterns/old-parchment.png'); background-color: #f5eeda; color: #3a2a1a; border: 2px solid #8a6a4a; box-shadow: 0 0 20px rgba(0,0,0,0.7); }
+        .btn-alchemist { background-color: #6a4a2a; border-bottom: 4px solid #4a3a1a; transition: all 0.1s ease-in-out; color: white; }
+        .btn-alchemist:hover { background-color: #7a5a3a; }
+        .btn-alchemist:active { transform: translateY(2px); border-bottom-width: 2px; }
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); }
+        @keyframes correct-glow { 0%, 100% { box-shadow: 0 0 20px rgba(0,0,0,0.7); } 50% { box-shadow: 0 0 30px #4ade80, 0 0 40px #4ade80; } }
+        @keyframes incorrect-shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+        .correct-answer { animation: correct-glow 1.5s ease-in-out; }
+        .incorrect-answer { animation: incorrect-shake 0.5s ease-in-out; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="w-full max-w-md mx-auto hidden">
+        <div class="parchment p-8 text-center rounded-lg">
+            <h1 class="font-cinzel text-4xl font-bold text-amber-900 mb-2">คัมภีร์นักแปรธาตุ</h1>
+            <p class="text-amber-800/80 mb-8">จงพิสูจน์ตัวตนเพื่อเริ่มการท้าทาย</p>
+            <button id="login-button" class="btn-alchemist flex items-center justify-center gap-3 w-full p-4 rounded-lg text-xl font-bold">
+                <svg class="w-6 h-6" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C42.021,35.591,44,30.138,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+                <span>ลงชื่อเข้าใช้ด้วย Google</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboard-screen" class="w-full max-w-md mx-auto hidden">
+        <div class="parchment p-8 text-center rounded-lg">
+            <h1 id="welcome-message" class="font-cinzel text-2xl font-bold text-amber-900 mb-2"></h1>
+            <p class="text-amber-800/80 mb-6">สถิติเวลาที่ดีที่สุดของคุณ</p>
+            <p id="best-time-display" class="font-code text-5xl font-bold text-slate-800 mb-8"></p>
+            <div class="space-y-4">
+                <button id="start-challenge-button" class="btn-alchemist w-full p-4 rounded-lg text-xl font-bold">เริ่มการท้าทาย!</button>
+                <button id="dashboard-leaderboard-button" class="btn-alchemist w-full p-4 rounded-lg text-xl font-bold">ดูหอปรมาจารย์</button>
+                <button id="logout-button" class="w-full p-2 rounded-lg text-amber-800 hover:bg-amber-800/10">ออกจากระบบ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div id="game-container" class="w-full max-w-3xl mx-auto hidden">
+        <main id="game-board" class="parchment rounded-lg p-6 md:p-8">
+            <div class="flex justify-between items-center mb-4 border-b-2 border-amber-800/30 pb-2">
+                <div id="question-counter" class="font-cinzel text-xl">ข้อที่: 1/10</div>
+                <div id="timer-display" class="font-code text-2xl font-bold text-slate-800">0.0</div>
+            </div>
+            <div class="mb-6 text-center">
+                <h2 class="text-xl font-bold mb-2 text-amber-900">ถอดรหัสโครงสร้างนี้:</h2>
+                <div class="bg-white/50 p-4 rounded-md inline-block border border-amber-800/20">
+                    <p id="structure-text" class="font-code text-xl md:text-2xl font-semibold text-slate-800"></p>
+                </div>
+            </div>
+            <div id="choices-wrapper" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <p id="feedback-message" class="text-center mt-4 h-6 font-semibold"></p>
+        </main>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboard-modal" class="fixed inset-0 modal-backdrop flex-col items-center justify-center p-4 hidden">
+        <div class="parchment rounded-lg p-8 max-w-md w-full text-center relative">
+            <button id="close-leaderboard-button" class="absolute top-2 right-4 font-bold text-2xl text-amber-800/70 hover:text-amber-900">&times;</button>
+            <h2 class="font-cinzel text-3xl font-bold mb-6 text-amber-900">หอปรมาจารย์</h2>
+            <div id="leaderboard-list" class="space-y-2 text-left"></div>
+        </div>
+    </div>
+    
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="fixed inset-0 modal-backdrop flex-col items-center justify-center p-4 hidden">
+        <div class="parchment rounded-lg p-8 max-w-md w-full text-center relative">
+            <h2 class="font-cinzel text-3xl font-bold mb-2 text-amber-900">สำเร็จการท้าทาย!</h2>
+            <p class="mb-4 text-amber-900/80">นี่คือเวลาที่เจ้าทำได้</p>
+            <p id="final-time" class="font-code text-5xl font-bold text-slate-800 mb-2"></p>
+            <p id="new-best-time-message" class="text-green-600 font-bold mb-6"></p>
+            <div class="flex gap-4">
+                <button id="play-again-button" class="btn-alchemist w-full p-3 rounded-lg text-lg font-bold">ท้าทายอีกครั้ง</button>
+                <button id="back-to-dashboard-button" class="btn-alchemist w-full p-3 rounded-lg text-lg font-bold">กลับสู่แดชบอร์ด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, query, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyByDV8O_jBOE4dFzBifTa-ld2w7l9RcXgI",
+        authDomain: "mathgamedata.firebaseapp.com",
+        databaseURL: "https://mathgamedata-default-rtdb.firebaseio.com",
+        projectId: "mathgamedata",
+        storageBucket: "mathgamedata.appspot.com",
+        messagingSenderId: "235464644882",
+        appId: "1:235464644882:web:3bab8125ccf7ce3cf27bcb",
+        measurementId: "G-BKR3RJVLVQ"
+    };
+    const appId = 'amine-alchemist-default';
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const authProvider = new GoogleAuthProvider();
+
+    // --- GAME DATA ---
+    const questions = [
+        { level: 1, structureText: 'CH3-NH2', answer: 'methanamine' },
+        { level: 1, structureText: 'CH3-CH2-NH2', answer: 'ethanamine' },
+        { level: 1, structureText: 'CH3-CH2-CH2-NH2', answer: 'propan-1-amine' },
+        { level: 1, structureText: 'CH3-CH(NH2)-CH3', answer: 'propan-2-amine' },
+        { level: 2, structureText: 'CH3-NH-CH3', answer: 'N-methylmethanamine' },
+        { level: 2, structureText: 'CH3-CH2-NH-CH3', answer: 'N-methylethanamine' },
+        { level: 2, structureText: '(CH3)2CH-CH2-NH2', answer: '2-methylpropan-1-amine' },
+        { level: 2, structureText: 'CH3-CH2-NH-CH2-CH3', answer: 'N-ethylethanamine' },
+        { level: 3, structureText: '(CH3)3N', answer: 'N,N-dimethylmethanamine' },
+        { level: 3, structureText: 'CH3-N(CH2-CH3)-CH2-CH2-CH3', answer: 'N-ethyl-N-methylpropan-1-amine' },
+        { level: 3, structureText: '(CH3)2CH-NH-CH2CH3', answer: 'N-ethylpropan-2-amine' },
+        { level: 3, structureText: '(CH3-CH2)2N-CH3', answer: 'N,N-diethylmethanamine' },
+        { level: 4, structureText: 'C6H5-NH2', answer: 'benzenamine' },
+        { level: 4, structureText: 'H2N-CH2-CH2-NH2', answer: 'ethan-1,2-diamine' },
+        { level: 4, structureText: '(CH3)3C-NH2', answer: '2-methylpropan-2-amine' },
+        { level: 4, structureText: 'C6H5-NH-CH3', answer: 'N-methylbenzenamine' },
+    ];
+
+    // --- GAME STATE ---
+    let state = {
+        user: null,
+        bestTime: null,
+        gameStartTime: 0,
+        timerInterval: null,
+        currentQuestionNumber: 0,
+        challengeQuestions: [],
+    };
+
+    // --- DOM ELEMENTS ---
+    const loginScreen = document.getElementById('login-screen');
+    const dashboardScreen = document.getElementById('dashboard-screen');
+    const gameContainer = document.getElementById('game-container');
+    const leaderboardModal = document.getElementById('leaderboard-modal');
+    const gameOverModal = document.getElementById('game-over-modal');
+    // Buttons
+    const loginButton = document.getElementById('login-button');
+    const logoutButton = document.getElementById('logout-button');
+    const startChallengeButton = document.getElementById('start-challenge-button');
+    const dashboardLeaderboardButton = document.getElementById('dashboard-leaderboard-button');
+    const closeLeaderboardButton = document.getElementById('close-leaderboard-button');
+    const playAgainButton = document.getElementById('play-again-button');
+    const backToDashboardButton = document.getElementById('back-to-dashboard-button');
+    // Displays
+    const welcomeMessage = document.getElementById('welcome-message');
+    const bestTimeDisplay = document.getElementById('best-time-display');
+    const questionCounter = document.getElementById('question-counter');
+    const timerDisplay = document.getElementById('timer-display');
+    const structureText = document.getElementById('structure-text');
+    const choicesWrapper = document.getElementById('choices-wrapper');
+    const feedbackMessage = document.getElementById('feedback-message');
+    const leaderboardList = document.getElementById('leaderboard-list');
+    const finalTimeDisplay = document.getElementById('final-time');
+    const newBestTimeMessage = document.getElementById('new-best-time-message');
+
+    // --- AUTHENTICATION ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            state.user = { uid: user.uid, name: user.displayName };
+            await fetchBestTime();
+            showScreen('dashboard');
+        } else {
+            state.user = null;
+            showScreen('login');
+        }
+    });
+
+    const handleGoogleLogin = async () => {
+        try { await signInWithPopup(auth, authProvider); } 
+        catch (error) { console.error("Login failed:", error); }
+    };
+
+    const handleLogout = async () => {
+        try { await signOut(auth); } 
+        catch (error) { console.error("Logout failed:", error); }
+    };
+
+    // --- UI & SCREEN MANAGEMENT ---
+    function showScreen(screenName) {
+        [loginScreen, dashboardScreen, gameContainer, gameOverModal].forEach(s => s.style.display = 'none');
+        if (screenName === 'login') loginScreen.style.display = 'block';
+        if (screenName === 'dashboard') {
+            welcomeMessage.textContent = `ยินดีต้อนรับ, ${state.user.name}`;
+            bestTimeDisplay.textContent = state.bestTime ? `${state.bestTime.toFixed(2)} วินาที` : 'ยังไม่มีสถิติ';
+            dashboardScreen.style.display = 'block';
+        }
+        if (screenName === 'game') gameContainer.style.display = 'block';
+        if (screenName === 'gameOver') gameOverModal.style.display = 'flex';
+    }
+
+    // --- GAME LOGIC ---
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startChallenge() {
+        state.currentQuestionNumber = 1;
+        // Create a 10-question challenge with increasing difficulty
+        const l1 = shuffleArray(questions.filter(q => q.level === 1)).slice(0, 3);
+        const l2 = shuffleArray(questions.filter(q => q.level === 2)).slice(0, 3);
+        const l3 = shuffleArray(questions.filter(q => q.level === 3)).slice(0, 2);
+        const l4 = shuffleArray(questions.filter(q => q.level === 4)).slice(0, 2);
+        state.challengeQuestions = shuffleArray([...l1, ...l2, ...l3, ...l4]);
+        
+        state.gameStartTime = Date.now();
+        state.timerInterval = setInterval(() => {
+            const elapsed = (Date.now() - state.gameStartTime) / 1000;
+            timerDisplay.textContent = elapsed.toFixed(1);
+        }, 100);
+        
+        showScreen('game');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        feedbackMessage.textContent = '';
+        document.getElementById('game-board').classList.remove('incorrect-answer', 'correct-answer');
+        
+        const question = state.challengeQuestions[state.currentQuestionNumber - 1];
+        questionCounter.textContent = `ข้อที่: ${state.currentQuestionNumber}/10`;
+        structureText.textContent = question.structureText;
+
+        // Generate choices
+        choicesWrapper.innerHTML = '';
+        const allAnswers = questions.map(q => q.answer);
+        let choices = [question.answer];
+        while (choices.length < 4) {
+            const randomAnswer = allAnswers[Math.floor(Math.random() * allAnswers.length)];
+            if (!choices.includes(randomAnswer)) {
+                choices.push(randomAnswer);
+            }
+        }
+        
+        shuffleArray(choices).forEach(choice => {
+            const button = document.createElement('button');
+            button.textContent = choice;
+            button.className = 'btn-alchemist p-3 rounded-lg text-lg';
+            button.onclick = () => checkAnswer(choice);
+            choicesWrapper.appendChild(button);
+        });
+    }
+
+    function checkAnswer(userAnswer) {
+        const correctAnswer = state.challengeQuestions[state.currentQuestionNumber - 1].answer;
+        const gameBoard = document.getElementById('game-board');
+
+        if (userAnswer === correctAnswer) {
+            gameBoard.classList.add('correct-answer');
+            state.currentQuestionNumber++;
+            
+            setTimeout(() => {
+                if (state.currentQuestionNumber > 10) {
+                    endGame();
+                } else {
+                    loadQuestion();
+                }
+            }, 1000);
+        } else {
+            gameBoard.classList.add('incorrect-answer');
+        }
+    }
+
+    async function endGame() {
+        clearInterval(state.timerInterval);
+        const totalTime = (Date.now() - state.gameStartTime) / 1000;
+        
+        finalTimeDisplay.textContent = `${totalTime.toFixed(2)} วินาที`;
+        
+        if (!state.bestTime || totalTime < state.bestTime) {
+            newBestTimeMessage.textContent = "ทำลายสถิติใหม่!";
+            state.bestTime = totalTime;
+            await saveBestTime(totalTime);
+        } else {
+            newBestTimeMessage.textContent = "";
+        }
+        
+        showScreen('gameOver');
+    }
+
+    // --- FIRESTORE FUNCTIONS ---
+    async function fetchBestTime() {
+        if (!state.user) return;
+        const docRef = doc(db, `artifacts/${appId}/public/data/leaderboard`, state.user.uid);
+        try {
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                state.bestTime = docSnap.data().bestTimeSeconds;
+            } else {
+                state.bestTime = null;
+            }
+        } catch (error) {
+            console.error("Error fetching best time:", error);
+            state.bestTime = null;
+        }
+    }
+
+    async function saveBestTime(time) {
+        if (!state.user) return;
+        const docRef = doc(db, `artifacts/${appId}/public/data/leaderboard`, state.user.uid);
+        try {
+            await setDoc(docRef, {
+                name: state.user.name,
+                bestTimeSeconds: time
+            });
+        } catch (error) {
+            console.error("Error saving best time:", error);
+        }
+    }
+
+    async function displayLeaderboard() {
+        leaderboardList.innerHTML = '<p class="text-center text-amber-900/70">กำลังโหลด...</p>';
+        leaderboardModal.style.display = 'flex';
+        const leaderboardCollection = `artifacts/${appId}/public/data/leaderboard`;
+        try {
+            const q = query(collection(db, leaderboardCollection), orderBy("bestTimeSeconds", "asc"));
+            const querySnapshot = await getDocs(q);
+            let scores = [];
+            querySnapshot.forEach((doc) => { scores.push(doc.data()); });
+            
+            leaderboardList.innerHTML = '';
+            if (scores.length === 0) {
+                leaderboardList.innerHTML = '<p class="text-center text-amber-900/70">ยังไม่มีปรมาจารย์ในหอแห่งนี้</p>';
+                return;
+            }
+            scores.slice(0, 10).forEach((entry, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'flex justify-between items-center p-2 rounded-md';
+                entryDiv.innerHTML = `<span class="font-bold text-amber-900">${index + 1}. ${entry.name}</span><span class="font-code font-bold text-amber-800">${entry.bestTimeSeconds.toFixed(2)} วิ</span>`;
+                leaderboardList.appendChild(entryDiv);
+            });
+        } catch (error) {
+            console.error("Error fetching leaderboard:", error);
+            leaderboardList.innerHTML = '<p class="text-center text-red-600">ไม่สามารถโหลดข้อมูลได้</p>';
+        }
+    }
+
+    // --- EVENT LISTENERS ---
+    loginButton.addEventListener('click', handleGoogleLogin);
+    logoutButton.addEventListener('click', handleLogout);
+    startChallengeButton.addEventListener('click', startChallenge);
+    dashboardLeaderboardButton.addEventListener('click', displayLeaderboard);
+    closeLeaderboardButton.addEventListener('click', () => { leaderboardModal.style.display = 'none'; });
+    playAgainButton.addEventListener('click', startChallenge);
+    backToDashboardButton.addEventListener('click', () => showScreen('dashboard'));
+
+    </script>
+</body>
+</html>
