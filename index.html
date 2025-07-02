@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>คัมภีร์นักแปรธาตุ: ศึกประลองความเร็ว</title>
+    <title>คัมภีร์นักแปรธาตุ: ปริศนาแห่งเอมีน</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,67 +14,145 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Sans+Thai:wght@400;500&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Noto Sans Thai', sans-serif; background-image: url('https://www.transparenttextures.com/patterns/dark-leather.png'); background-color: #1a1a1a; color: #e0dcd1; }
+        /* Custom styles for the ancient theme */
+        body {
+            font-family: 'Noto Sans Thai', sans-serif;
+            background-image: url('https://www.transparenttextures.com/patterns/dark-leather.png');
+            background-color: #1a1a1a;
+            color: #e0dcd1;
+        }
         .font-cinzel { font-family: 'Cinzel', serif; }
         .font-code { font-family: 'Source Code Pro', monospace; }
-        .parchment { background-image: url('https://www.transparenttextures.com/patterns/old-parchment.png'); background-color: #f5eeda; color: #3a2a1a; border: 2px solid #8a6a4a; box-shadow: 0 0 20px rgba(0,0,0,0.7); }
-        .btn-alchemist { background-color: #6a4a2a; border-bottom: 4px solid #4a3a1a; transition: all 0.1s ease-in-out; color: white; }
-        .btn-alchemist:hover { background-color: #7a5a3a; }
-        .btn-alchemist:active { transform: translateY(2px); border-bottom-width: 2px; }
-        .modal-backdrop { background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); }
-        @keyframes correct-glow { 0%, 100% { box-shadow: 0 0 20px rgba(0,0,0,0.7); } 50% { box-shadow: 0 0 30px #4ade80, 0 0 40px #4ade80; } }
-        @keyframes incorrect-shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+        .parchment {
+            background-image: url('https://www.transparenttextures.com/patterns/old-parchment.png');
+            background-color: #f5eeda;
+            color: #3a2a1a;
+            border: 2px solid #8a6a4a;
+            box-shadow: 0 0 20px rgba(0,0,0,0.7);
+        }
+        .rune {
+            background-color: #4a4a4a;
+            border: 2px solid #7a7a7a;
+            color: #f5eeda;
+            cursor: grab;
+            transition: all 0.2s ease-in-out;
+        }
+        .rune:hover {
+            transform: scale(1.05);
+            border-color: #f5eeda;
+            box-shadow: 0 0 10px #f5eeda;
+        }
+        .naming-slate {
+            min-height: 70px;
+            border: 3px dashed #8a6a4a;
+            background-color: rgba(0,0,0,0.1);
+        }
+        .btn-alchemist, .btn-mode {
+            background-color: #6a4a2a;
+            border-bottom: 4px solid #4a3a1a;
+            transition: all 0.1s ease-in-out;
+            color: white;
+        }
+        .btn-alchemist:hover, .btn-mode:hover {
+            background-color: #7a5a3a;
+        }
+        .btn-alchemist:active, .btn-mode:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        @keyframes correct-glow {
+            0% { box-shadow: 0 0 20px rgba(0,0,0,0.7); }
+            50% { box-shadow: 0 0 30px #4ade80, 0 0 40px #4ade80; }
+            100% { box-shadow: 0 0 20px rgba(0,0,0,0.7); }
+        }
+        @keyframes incorrect-shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
         .correct-answer { animation: correct-glow 1.5s ease-in-out; }
         .incorrect-answer { animation: incorrect-shake 0.5s ease-in-out; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <!-- Login Screen -->
-    <div id="login-screen" class="w-full max-w-md mx-auto hidden">
-        <div class="parchment p-8 text-center rounded-lg">
-            <h1 class="font-cinzel text-4xl font-bold text-amber-900 mb-2">คัมภีร์นักแปรธาตุ</h1>
-            <p class="text-amber-800/80 mb-8">จงพิสูจน์ตัวตนเพื่อเริ่มการท้าทาย</p>
-            <form id="login-form" class="space-y-4">
-                <input id="email-input" type="email" required placeholder="อีเมล" class="w-full p-3 rounded-lg border border-amber-800/30 text-lg text-black" />
-                <input id="password-input" type="password" required placeholder="รหัสผ่าน" class="w-full p-3 rounded-lg border border-amber-800/30 text-lg text-black" />
-                <button type="submit" class="btn-alchemist w-full p-4 rounded-lg text-xl font-bold">เข้าสู่ระบบ</button>
-            </form>
-            <button id="register-button" class="w-full mt-2 p-2 rounded-lg text-amber-800 hover:bg-amber-800/10">สมัครสมาชิกใหม่</button>
-            <p id="login-error" class="text-red-600 mt-2"></p>
-        </div>
-    </div>
-
-    <!-- Dashboard Screen -->
-    <div id="dashboard-screen" class="w-full max-w-md mx-auto hidden">
-        <div class="parchment p-8 text-center rounded-lg">
-            <h1 id="welcome-message" class="font-cinzel text-2xl font-bold text-amber-900 mb-2"></h1>
-            <p class="text-amber-800/80 mb-6">สถิติเวลาที่ดีที่สุดของคุณ</p>
-            <p id="best-time-display" class="font-code text-5xl font-bold text-slate-800 mb-8"></p>
-            <div class="space-y-4">
-                <button id="start-challenge-button" class="btn-alchemist w-full p-4 rounded-lg text-xl font-bold">เริ่มการท้าทาย!</button>
-                <button id="dashboard-leaderboard-button" class="btn-alchemist w-full p-4 rounded-lg text-xl font-bold">ดูหอปรมาจารย์</button>
-                <button id="logout-button" class="w-full p-2 rounded-lg text-amber-800 hover:bg-amber-800/10">ออกจากระบบ</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Main Game Container -->
     <div id="game-container" class="w-full max-w-3xl mx-auto hidden">
+        <header class="text-center mb-6 relative">
+            <button id="back-to-modes-button" class="absolute left-0 top-1/2 -translate-y-1/2 text-amber-200 hover:text-white underline">&lt; เลือกโหมด</button>
+            <h1 class="font-cinzel text-4xl md:text-5xl font-bold text-amber-300 tracking-widest" style="text-shadow: 2px 2px 5px #000;">
+                ปริศนาแห่งเอมีน
+            </h1>
+            <p class="text-amber-100">โดยนักแปรธาตุ <span id="player-name-display" class="font-bold"></span></p>
+        </header>
+
         <main id="game-board" class="parchment rounded-lg p-6 md:p-8">
             <div class="flex justify-between items-center mb-4 border-b-2 border-amber-800/30 pb-2">
-                <div id="question-counter" class="font-cinzel text-xl">ข้อที่: 1/10</div>
-                <div id="timer-display" class="font-code text-2xl font-bold text-slate-800">0.0</div>
+                <div class="font-cinzel text-xl">ระดับ: <span id="level-display" class="font-bold">1</span></div>
+                <div class="font-cinzel text-xl">คะแนน: <span id="score-display" class="font-bold">0</span></div>
             </div>
+
             <div class="mb-6 text-center">
                 <h2 class="text-xl font-bold mb-2 text-amber-900">ถอดรหัสโครงสร้างนี้:</h2>
                 <div class="bg-white/50 p-4 rounded-md inline-block border border-amber-800/20">
                     <p id="structure-text" class="font-code text-xl md:text-2xl font-semibold text-slate-800"></p>
                 </div>
             </div>
-            <div id="choices-wrapper" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+            <!-- Container for Multiple Choice Mode -->
+            <div id="multiple-choice-container" class="hidden">
+                 <h3 class="text-lg font-semibold mb-4 text-center text-amber-900">จงเลือกนามที่ถูกต้อง</h3>
+                 <div id="choices-wrapper" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Choice buttons will be generated here -->
+                 </div>
+            </div>
+
+            <!-- Container for Rune Assembly Mode -->
+            <div id="rune-assembly-container" class="hidden">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2 text-center text-amber-900">เรียงอักขระบนแท่นพิธีกรรม</h3>
+                    <div id="naming-slate" class="naming-slate rounded-lg p-3 flex flex-wrap items-center justify-center gap-2"></div>
+                </div>
+                <div class="mb-8">
+                     <h3 class="text-lg font-semibold mb-2 text-center text-amber-900">เลือกอักขระศิลา</h3>
+                    <div id="rune-shards-container" class="p-3 flex flex-wrap items-center justify-center gap-3"></div>
+                </div>
+                <div class="text-center">
+                    <button id="transmute-button" class="btn-alchemist font-cinzel text-white font-bold py-3 px-8 rounded-lg text-2xl shadow-lg">ถอดรหัส!</button>
+                </div>
+            </div>
+            
             <p id="feedback-message" class="text-center mt-4 h-6 font-semibold"></p>
         </main>
+        
+        <footer class="text-center mt-4">
+            <button id="leaderboard-button" class="text-amber-200 hover:text-white underline">ดูหอปรมาจารย์</button>
+        </footer>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4">
+        <div class="parchment rounded-lg p-8 max-w-md w-full text-center">
+            <h2 class="font-cinzel text-3xl font-bold mb-4 text-amber-900">จงจารึกนาม</h2>
+            <p class="mb-6 text-amber-900/80">ก่อนจะเริ่มการแปรธาตุ โปรดบอกนามของนักแปรธาตุเช่นเจ้า</p>
+            <input type="text" id="player-name-input" placeholder="นามนักแปรธาตุ..." class="w-full p-3 rounded-md bg-white/70 border-2 border-amber-800/30 text-amber-900 placeholder-amber-900/60 focus:outline-none focus:ring-2 focus:ring-amber-700">
+            <button id="start-game-button" class="btn-alchemist font-cinzel text-white font-bold py-2 px-6 rounded-lg text-xl shadow-lg mt-6">บันทึกนาม</button>
+        </div>
+    </div>
+
+    <!-- Mode Selection Modal -->
+    <div id="mode-selection-modal" class="fixed inset-0 modal-backdrop hidden items-center justify-center p-4">
+        <div class="parchment rounded-lg p-8 max-w-md w-full text-center">
+            <h2 class="font-cinzel text-3xl font-bold mb-6 text-amber-900">เลือกเส้นทางแห่งปรมาจารย์</h2>
+            <div class="space-y-4">
+                <button id="mode-multiple-choice" data-mode="multipleChoice" class="btn-mode w-full p-4 rounded-lg text-xl font-bold">โหมดปรนัย (ทายชื่อ)</button>
+                <button id="mode-rune-assembly" data-mode="runeAssembly" class="btn-mode w-full p-4 rounded-lg text-xl font-bold">โหมดประกอบอักขระ (ต่อคำ)</button>
+            </div>
+        </div>
     </div>
 
     <!-- Leaderboard Modal -->
@@ -89,324 +167,364 @@
     <!-- Game Over Modal -->
     <div id="game-over-modal" class="fixed inset-0 modal-backdrop flex-col items-center justify-center p-4 hidden">
         <div class="parchment rounded-lg p-8 max-w-md w-full text-center relative">
-            <h2 class="font-cinzel text-3xl font-bold mb-2 text-amber-900">สำเร็จการท้าทาย!</h2>
-            <p class="mb-4 text-amber-900/80">นี่คือเวลาที่เจ้าทำได้</p>
-            <p id="final-time" class="font-code text-5xl font-bold text-slate-800 mb-2"></p>
-            <p id="new-best-time-message" class="text-green-600 font-bold mb-6"></p>
-            <div class="flex gap-4">
-                <button id="play-again-button" class="btn-alchemist w-full p-3 rounded-lg text-lg font-bold">ท้าทายอีกครั้ง</button>
-                <button id="back-to-dashboard-button" class="btn-alchemist w-full p-3 rounded-lg text-lg font-bold">กลับสู่แดชบอร์ด</button>
-            </div>
+            <h2 class="font-cinzel text-3xl font-bold mb-2 text-amber-900">การเดินทางสิ้นสุด</h2>
+            <p class="mb-4 text-amber-900/80">เจ้าคือปรมาจารย์ที่แท้จริง!</p>
+            <p class="font-cinzel text-2xl mb-6">คะแนนสุดท้าย: <span id="final-score" class="font-bold"></span></p>
+            <button id="play-again-button" class="btn-alchemist font-cinzel text-white font-bold py-2 px-6 rounded-lg text-xl shadow-lg">ท้าทายอีกครั้ง</button>
         </div>
     </div>
 
     <!-- Firebase SDK -->
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, query, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, query, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'amine-alchemist-default';
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyByDV8O_jBOE4dFzBifTa-ld2w7l9RcXgI",
-        authDomain: "mathgamedata.firebaseapp.com",
-        databaseURL: "https://mathgamedata-default-rtdb.firebaseio.com",
-        projectId: "mathgamedata",
-        storageBucket: "mathgamedata.appspot.com",
-        messagingSenderId: "235464644882",
-        appId: "1:235464644882:web:3bab8125ccf7ce3cf27bcb",
-        measurementId: "G-BKR3RJVLVQ"
-    };
-    const appId = 'amine-alchemist-default';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        // --- GAME DATA ---
+        const questions = [
+            { level: 1, structureText: 'CH3-NH2', answer: ['methan', 'amine'], distractors: ['ethan', '-1-'] },
+            { level: 1, structureText: 'CH3-CH2-NH2', answer: ['ethan', 'amine'], distractors: ['propan', '-1-'] },
+            { level: 1, structureText: 'CH3-CH2-CH2-NH2', answer: ['propan', '-1-', 'amine'], distractors: ['butan', '-2-'] },
+            { level: 1, structureText: 'CH3-CH(NH2)-CH3', answer: ['propan', '-2-', 'amine'], distractors: ['-1-', 'N-methyl'] },
+            { level: 2, structureText: 'CH3-NH-CH3', answer: ['N-methyl', 'methan', 'amine'], distractors: ['ethan', 'N-ethyl'] },
+            { level: 2, structureText: 'CH3-CH2-NH-CH3', answer: ['N-methyl', 'ethan', 'amine'], distractors: ['propan', 'N,N-dimethyl'] },
+            { level: 2, structureText: '(CH3)2CH-CH2-NH2', answer: ['2-methyl', 'propan', '-1-', 'amine'], distractors: ['butan', '-2-'] },
+            { level: 3, structureText: '(CH3)3N', answer: ['N,N-dimethyl', 'methan', 'amine'], distractors: ['N-methyl', 'ethan'] },
+            { level: 3, structureText: 'CH3-N(CH2-CH3)-CH2-CH2-CH3', answer: ['N-ethyl', 'N-methyl', 'propan', '-1-', 'amine'], distractors: ['N,N-diethyl', 'butan'] },
+            { level: 4, structureText: 'C6H5-NH2', answer: ['benzen', 'amine'], distractors: ['phenyl', 'aniline'] },
+            { level: 4, structureText: 'H2N-CH2-CH2-NH2', answer: ['ethan', '-1,2-', 'di', 'amine'], distractors: ['-1,1-', 'di', 'ethan'] },
+            { level: 4, structureText: '(CH3)3C-NH2', answer: ['2-methyl', 'propan', '-2-', 'amine'], distractors: ['butan', '-1-'] },
+        ];
 
-    // --- GAME DATA ---
-    const questions = [
-        { level: 1, structureText: 'CH3-NH2', answer: 'methanamine' },
-        { level: 1, structureText: 'CH3-CH2-NH2', answer: 'ethanamine' },
-        { level: 1, structureText: 'CH3-CH2-CH2-NH2', answer: 'propan-1-amine' },
-        { level: 1, structureText: 'CH3-CH(NH2)-CH3', answer: 'propan-2-amine' },
-        { level: 2, structureText: 'CH3-NH-CH3', answer: 'N-methylmethanamine' },
-        { level: 2, structureText: 'CH3-CH2-NH-CH3', answer: 'N-methylethanamine' },
-        { level: 2, structureText: '(CH3)2CH-CH2-NH2', answer: '2-methylpropan-1-amine' },
-        { level: 2, structureText: 'CH3-CH2-NH-CH2-CH3', answer: 'N-ethylethanamine' },
-        { level: 3, structureText: '(CH3)3N', answer: 'N,N-dimethylmethanamine' },
-        { level: 3, structureText: 'CH3-N(CH2-CH3)-CH2-CH2-CH3', answer: 'N-ethyl-N-methylpropan-1-amine' },
-        { level: 3, structureText: '(CH3)2CH-NH-CH2CH3', answer: 'N-ethylpropan-2-amine' },
-        { level: 3, structureText: '(CH3-CH2)2N-CH3', answer: 'N,N-diethylmethanamine' },
-        { level: 4, structureText: 'C6H5-NH2', answer: 'benzenamine' },
-        { level: 4, structureText: 'H2N-CH2-CH2-NH2', answer: 'ethan-1,2-diamine' },
-        { level: 4, structureText: '(CH3)3C-NH2', answer: '2-methylpropan-2-amine' },
-        { level: 4, structureText: 'C6H5-NH-CH3', answer: 'N-methylbenzenamine' },
-    ];
+        // --- GAME STATE ---
+        let state = {
+            userId: null,
+            playerName: '',
+            gameMode: null, // 'multipleChoice' or 'runeAssembly'
+            score: 0,
+            currentLevel: 1,
+            currentQuestionIndex: 0,
+            questionsForLevel: [],
+        };
 
-    // --- GAME STATE ---
-    let state = {
-        user: null,
-        bestTime: null,
-        gameStartTime: 0,
-        timerInterval: null,
-        currentQuestionNumber: 0,
-        challengeQuestions: [],
-    };
+        // --- DOM ELEMENTS ---
+        const gameContainer = document.getElementById('game-container');
+        const loginModal = document.getElementById('login-modal');
+        const modeSelectionModal = document.getElementById('mode-selection-modal');
+        const leaderboardModal = document.getElementById('leaderboard-modal');
+        const gameOverModal = document.getElementById('game-over-modal');
+        
+        const playerNameInput = document.getElementById('player-name-input');
+        const startGameButton = document.getElementById('start-game-button');
+        const transmuteButton = document.getElementById('transmute-button');
+        
+        const playerNameDisplay = document.getElementById('player-name-display');
+        const levelDisplay = document.getElementById('level-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const structureText = document.getElementById('structure-text');
+        const feedbackMessage = document.getElementById('feedback-message');
+        
+        const multipleChoiceContainer = document.getElementById('multiple-choice-container');
+        const choicesWrapper = document.getElementById('choices-wrapper');
+        const runeAssemblyContainer = document.getElementById('rune-assembly-container');
+        const namingSlate = document.getElementById('naming-slate');
+        const runeShardsContainer = document.getElementById('rune-shards-container');
+        
+        const modeMultipleChoiceBtn = document.getElementById('mode-multiple-choice');
+        const modeRuneAssemblyBtn = document.getElementById('mode-rune-assembly');
+        const backToModesButton = document.getElementById('back-to-modes-button');
+        
+        const leaderboardButton = document.getElementById('leaderboard-button');
+        const closeLeaderboardButton = document.getElementById('close-leaderboard-button');
+        const leaderboardList = document.getElementById('leaderboard-list');
 
-    // --- DOM ELEMENTS ---
-    const loginScreen = document.getElementById('login-screen');
-    const dashboardScreen = document.getElementById('dashboard-screen');
-    const gameContainer = document.getElementById('game-container');
-    const leaderboardModal = document.getElementById('leaderboard-modal');
-    const gameOverModal = document.getElementById('game-over-modal');
-    const loginForm = document.getElementById('login-form');
-    const emailInput = document.getElementById('email-input');
-    const passwordInput = document.getElementById('password-input');
-    const registerButton = document.getElementById('register-button');
-    const loginError = document.getElementById('login-error');
-    const logoutButton = document.getElementById('logout-button');
-    const startChallengeButton = document.getElementById('start-challenge-button');
-    const dashboardLeaderboardButton = document.getElementById('dashboard-leaderboard-button');
-    const closeLeaderboardButton = document.getElementById('close-leaderboard-button');
-    const playAgainButton = document.getElementById('play-again-button');
-    const backToDashboardButton = document.getElementById('back-to-dashboard-button');
-    const welcomeMessage = document.getElementById('welcome-message');
-    const bestTimeDisplay = document.getElementById('best-time-display');
-    const questionCounter = document.getElementById('question-counter');
-    const timerDisplay = document.getElementById('timer-display');
-    const structureText = document.getElementById('structure-text');
-    const choicesWrapper = document.getElementById('choices-wrapper');
-    const feedbackMessage = document.getElementById('feedback-message');
-    const leaderboardList = document.getElementById('leaderboard-list');
-    const finalTimeDisplay = document.getElementById('final-time');
-    const newBestTimeMessage = document.getElementById('new-best-time-message');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const playAgainButton = document.getElementById('play-again-button');
 
-    // --- AUTHENTICATION ---
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            state.user = { uid: user.uid, name: user.email };
-            await fetchBestTime();
-            showScreen('dashboard');
-        } else {
-            state.user = null;
-            showScreen('login');
-        }
-    });
-
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        loginError.textContent = "";
-        try {
-            await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-        } catch (error) {
-            if (error.code === "auth/user-not-found") {
-                loginError.textContent = "ไม่พบผู้ใช้งานนี้";
-            } else if (error.code === "auth/wrong-password") {
-                loginError.textContent = "รหัสผ่านไม่ถูกต้อง";
-            } else {
-                loginError.textContent = "เข้าสู่ระบบล้มเหลว";
+        // --- DRAG AND DROP LOGIC ---
+        let draggedRune = null;
+        function handleDragStart(e) { draggedRune = e.target; setTimeout(() => { e.target.style.opacity = '0.5'; }, 0); }
+        function handleDragEnd(e) { draggedRune.style.opacity = '1'; draggedRune = null; }
+        function handleDragOver(e) { e.preventDefault(); }
+        function handleDrop(e) {
+            e.preventDefault();
+            if (draggedRune) {
+                const targetContainer = e.currentTarget.id === 'naming-slate' ? namingSlate : runeShardsContainer;
+                targetContainer.appendChild(draggedRune);
             }
         }
-    });
+        namingSlate.addEventListener('dragover', handleDragOver);
+        namingSlate.addEventListener('drop', handleDrop);
+        runeShardsContainer.addEventListener('dragover', handleDragOver);
+        runeShardsContainer.addEventListener('drop', handleDrop);
 
-    registerButton.addEventListener('click', async () => {
-        loginError.textContent = "";
-        try {
-            await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-            loginError.textContent = "สมัครสมาชิกสำเร็จ! กรุณากดเข้าสู่ระบบอีกครั้ง";
-        } catch (error) {
-            if (error.code === "auth/email-already-in-use") {
-                loginError.textContent = "อีเมลนี้ถูกใช้แล้ว";
-            } else if (error.code === "auth/invalid-email") {
-                loginError.textContent = "อีเมลไม่ถูกต้อง";
-            } else if (error.code === "auth/weak-password") {
-                loginError.textContent = "รหัสผ่านควรมีอย่างน้อย 6 ตัวอักษร";
-            } else {
-                loginError.textContent = "สมัครสมาชิกไม่สำเร็จ";
+        // --- GAME LOGIC ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function setupModeUI() {
+            if (state.gameMode === 'multipleChoice') {
+                multipleChoiceContainer.style.display = 'block';
+                runeAssemblyContainer.style.display = 'none';
+            } else if (state.gameMode === 'runeAssembly') {
+                multipleChoiceContainer.style.display = 'none';
+                runeAssemblyContainer.style.display = 'block';
             }
         }
-    });
 
-    logoutButton.addEventListener('click', async () => {
-        try { await signOut(auth); } 
-        catch (error) { console.error("Logout failed:", error); }
-    });
+        function loadQuestion() {
+            feedbackMessage.textContent = '';
+            document.getElementById('game-board').classList.remove('incorrect-answer', 'correct-answer');
 
-    // --- FIRESTORE FUNCTIONS ---
-    async function fetchBestTime() {
-        if (!state.user) return;
-        // เปลี่ยน path ให้ใช้ collection "leaderboard" ตรงๆ
-        const docRef = doc(db, "leaderboard", state.user.uid);
-        try {
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                state.bestTime = docSnap.data().bestTimeSeconds;
-            } else {
-                state.bestTime = null;
-            }
-        } catch (error) {
-            console.error("Error fetching best time:", error);
-            state.bestTime = null;
-        }
-    }
-
-    async function saveBestTime(time) {
-        if (!state.user) return;
-        // เปลี่ยน path ให้ใช้ collection "leaderboard" ตรงๆ
-        const docRef = doc(db, "leaderboard", state.user.uid);
-        try {
-            await setDoc(docRef, {
-                name: state.user.name, // ใช้ email เป็นชื่อ
-                bestTimeSeconds: time
-            });
-        } catch (error) {
-            console.error("Error saving best time:", error);
-        }
-    }
-
-    // --- LEADERBOARD ---
-    async function displayLeaderboard() {
-        leaderboardList.innerHTML = '<p class="text-center text-amber-900/70">กำลังโหลด...</p>';
-        leaderboardModal.style.display = 'flex';
-        try {
-            const q = query(collection(db, "leaderboard"), orderBy("bestTimeSeconds", "asc"));
-            const querySnapshot = await getDocs(q);
-            let scores = [];
-            querySnapshot.forEach((doc) => { scores.push(doc.data()); });
-
-            leaderboardList.innerHTML = '';
-            if (scores.length === 0) {
-                leaderboardList.innerHTML = '<p class="text-center text-amber-900/70">ยังไม่มีปรมาจารย์ในหอแห่งนี้</p>';
+            if (state.currentQuestionIndex >= state.questionsForLevel.length) {
+                if (state.currentLevel < 4) {
+                    state.currentLevel++;
+                    startLevel();
+                } else {
+                    endGame();
+                }
                 return;
             }
-            scores.slice(0, 10).forEach((entry, index) => {
-                const entryDiv = document.createElement('div');
-                entryDiv.className = 'flex justify-between items-center p-2 rounded-md';
-                entryDiv.innerHTML = `<span class="font-bold text-amber-900">${index + 1}. ${entry.name}</span><span class="font-code font-bold text-amber-800">${entry.bestTimeSeconds.toFixed(2)} วิ</span>`;
-                leaderboardList.appendChild(entryDiv);
-            });
-        } catch (error) {
-            console.error("Error fetching leaderboard:", error);
-            leaderboardList.innerHTML = '<p class="text-center text-red-600">ไม่สามารถโหลดข้อมูลได้</p>';
-        }
-    }
 
-    // --- GAME LOGIC (เพิ่มฟังก์ชัน startChallenge ถ้ายังไม่มี) ---
-    function startChallenge() {
-        state.currentQuestionNumber = 1;
-        // สุ่มคำถาม 10 ข้อ (ตัวอย่าง logic)
-        const l1 = shuffleArray(questions.filter(q => q.level === 1)).slice(0, 3);
-        const l2 = shuffleArray(questions.filter(q => q.level === 2)).slice(0, 3);
-        const l3 = shuffleArray(questions.filter(q => q.level === 3)).slice(0, 2);
-        const l4 = shuffleArray(questions.filter(q => q.level === 4)).slice(0, 2);
-        state.challengeQuestions = shuffleArray([...l1, ...l2, ...l3, ...l4]);
-
-        state.gameStartTime = Date.now();
-        state.timerInterval = setInterval(() => {
-            const elapsed = (Date.now() - state.gameStartTime) / 1000;
-            timerDisplay.textContent = elapsed.toFixed(1);
-        }, 100);
-
-        showScreen('game');
-        loadQuestion();
-    }
-
-    // เพิ่มฟังก์ชัน shuffleArray ถ้ายังไม่มี
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-    // เพิ่มฟังก์ชัน loadQuestion ถ้ายังไม่มี (ตัวอย่าง)
-    function loadQuestion() {
-        feedbackMessage.textContent = '';
-        document.getElementById('game-board').classList.remove('incorrect-answer', 'correct-answer');
-
-        const question = state.challengeQuestions[state.currentQuestionNumber - 1];
-        questionCounter.textContent = `ข้อที่: ${state.currentQuestionNumber}/10`;
-        structureText.textContent = question.structureText;
-
-        // Generate choices
-        choicesWrapper.innerHTML = '';
-        const allAnswers = questions.map(q => q.answer);
-        let choices = [question.answer];
-        while (choices.length < 4) {
-            const randomAnswer = allAnswers[Math.floor(Math.random() * allAnswers.length)];
-            if (!choices.includes(randomAnswer)) {
-                choices.push(randomAnswer);
+            const question = state.questionsForLevel[state.currentQuestionIndex];
+            structureText.textContent = question.structureText;
+            updateUI();
+            
+            if (state.gameMode === 'multipleChoice') {
+                loadMultipleChoiceQuestion(question);
+            } else if (state.gameMode === 'runeAssembly') {
+                loadRuneAssemblyQuestion(question);
             }
         }
 
-        shuffleArray(choices).forEach(choice => {
-            const button = document.createElement('button');
-            button.textContent = choice;
-            button.className = 'btn-alchemist p-3 rounded-lg text-lg';
-            button.onclick = () => checkAnswer(choice);
-            choicesWrapper.appendChild(button);
-        });
-    }
-
-    // เพิ่มฟังก์ชัน checkAnswer ถ้ายังไม่มี (ตัวอย่าง)
-    function checkAnswer(userAnswer) {
-        const correctAnswer = state.challengeQuestions[state.currentQuestionNumber - 1].answer;
-        const gameBoard = document.getElementById('game-board');
-
-        if (userAnswer === correctAnswer) {
-            gameBoard.classList.add('correct-answer');
-            state.currentQuestionNumber++;
-
-            setTimeout(() => {
-                if (state.currentQuestionNumber > 10) {
-                    endGame();
-                } else {
-                    loadQuestion();
+        function loadMultipleChoiceQuestion(question) {
+            choicesWrapper.innerHTML = '';
+            const correctAnswer = question.answer.join('');
+            
+            // Generate distractors dynamically
+            let choices = [correctAnswer];
+            while (choices.length < 4) {
+                let distractorParts = shuffleArray([...question.answer, ...question.distractors]);
+                // Simple way to create a plausible wrong answer
+                let wrongAnswer = distractorParts.slice(0, Math.ceil(Math.random() * distractorParts.length)).join('');
+                if (wrongAnswer !== correctAnswer && !choices.includes(wrongAnswer) && wrongAnswer.length > 2) {
+                    choices.push(wrongAnswer);
                 }
-            }, 1000);
-        } else {
-            gameBoard.classList.add('incorrect-answer');
-        }
-    }
-
-    // เพิ่มฟังก์ชัน endGame ถ้ายังไม่มี (ตัวอย่าง)
-    async function endGame() {
-        clearInterval(state.timerInterval);
-        const totalTime = (Date.now() - state.gameStartTime) / 1000;
-
-        finalTimeDisplay.textContent = `${totalTime.toFixed(2)} วินาที`;
-
-        if (!state.bestTime || totalTime < state.bestTime) {
-            newBestTimeMessage.textContent = "ทำลายสถิติใหม่!";
-            state.bestTime = totalTime;
-            await saveBestTime(totalTime);
-        } else {
-            newBestTimeMessage.textContent = "";
+            }
+            
+            shuffleArray(choices).forEach(choice => {
+                const button = document.createElement('button');
+                button.textContent = choice;
+                button.className = 'btn-mode p-3 rounded-lg text-lg';
+                button.onclick = () => checkAnswer(choice);
+                choicesWrapper.appendChild(button);
+            });
         }
 
-        showScreen('gameOver');
-    }
-
-    // เพิ่มฟังก์ชัน showScreen ถ้ายังไม่มี (ตัวอย่าง)
-    function showScreen(screenName) {
-        [loginScreen, dashboardScreen, gameContainer, gameOverModal].forEach(s => s.style.display = 'none');
-        if (screenName === 'login') loginScreen.style.display = 'block';
-        if (screenName === 'dashboard') {
-            welcomeMessage.textContent = `ยินดีต้อนรับ, ${state.user.name}`;
-            bestTimeDisplay.textContent = state.bestTime ? `${state.bestTime.toFixed(2)} วินาที` : 'ยังไม่มีสถิติ';
-            dashboardScreen.style.display = 'block';
+        function loadRuneAssemblyQuestion(question) {
+            namingSlate.innerHTML = '';
+            runeShardsContainer.innerHTML = '';
+            const allShards = shuffleArray([...question.answer, ...question.distractors]);
+            allShards.forEach(part => {
+                const rune = document.createElement('div');
+                rune.textContent = part;
+                rune.className = 'rune font-cinzel font-bold text-lg p-2 px-4 rounded-md shadow-md';
+                rune.draggable = true;
+                rune.id = `rune-${part}-${Math.random()}`;
+                rune.addEventListener('dragstart', handleDragStart);
+                rune.addEventListener('dragend', handleDragEnd);
+                runeShardsContainer.appendChild(rune);
+            });
         }
-        if (screenName === 'game') gameContainer.style.display = 'block';
-        if (screenName === 'gameOver') gameOverModal.style.display = 'flex';
-    }
 
-    // --- EVENT LISTENERS ---
-    startChallengeButton.addEventListener('click', startChallenge);
-    dashboardLeaderboardButton.addEventListener('click', displayLeaderboard);
-    closeLeaderboardButton.addEventListener('click', () => { leaderboardModal.style.display = 'none'; });
-    playAgainButton.addEventListener('click', startChallenge);
-    backToDashboardButton.addEventListener('click', () => showScreen('dashboard'));
+        function checkAnswer(userAnswer) {
+            const question = state.questionsForLevel[state.currentQuestionIndex];
+            let correctAnswer;
+            
+            if (state.gameMode === 'runeAssembly') {
+                 const runesInSlate = [...namingSlate.children];
+                 userAnswer = runesInSlate.map(rune => rune.textContent).join('');
+            }
+            correctAnswer = question.answer.join('');
+            
+            const gameBoard = document.getElementById('game-board');
+            if (userAnswer === correctAnswer) {
+                state.score += 10 * state.currentLevel;
+                feedbackMessage.textContent = 'ถูกต้อง! นามนี้ทรงพลังยิ่งนัก!';
+                feedbackMessage.className = 'text-center mt-4 h-6 font-semibold text-green-600';
+                gameBoard.classList.add('correct-answer');
+                
+                state.currentQuestionIndex++;
+                setTimeout(loadQuestion, 1500);
+            } else {
+                feedbackMessage.textContent = 'ยังไม่ถูกต้อง... คัมภีร์สั่นคลอน';
+                feedbackMessage.className = 'text-center mt-4 h-6 font-semibold text-red-600';
+                gameBoard.classList.add('incorrect-answer');
+                state.score = Math.max(0, state.score - (2 * state.currentLevel));
+            }
+            updateUI();
+        }
+        
+        function updateUI() {
+            scoreDisplay.textContent = state.score;
+            levelDisplay.textContent = state.currentLevel;
+            playerNameDisplay.textContent = state.playerName;
+        }
+        
+        function startLevel() {
+            state.currentQuestionIndex = 0;
+            state.questionsForLevel = shuffleArray(questions.filter(q => q.level === state.currentLevel));
+            loadQuestion();
+        }
 
+        function resetGame() {
+            state.score = 0;
+            state.currentLevel = 1;
+            gameContainer.style.display = 'block';
+            modeSelectionModal.style.display = 'none';
+            gameOverModal.style.display = 'none';
+            setupModeUI();
+            startLevel();
+        }
+
+        async function endGame() {
+            finalScoreDisplay.textContent = state.score;
+            gameOverModal.style.display = 'flex';
+            await saveScoreToLeaderboard();
+        }
+        
+        function showModeSelection() {
+            loginModal.style.display = 'none';
+            gameContainer.style.display = 'none';
+            gameOverModal.style.display = 'none';
+            modeSelectionModal.style.display = 'flex';
+        }
+
+        // --- FIREBASE FUNCTIONS ---
+        async function authenticateUser() {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    state.userId = user.uid;
+                    await loadPlayerProfile();
+                } else {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) { console.error("Error during sign-in:", error); }
+                }
+            });
+        }
+
+        async function loadPlayerProfile() {
+            if (!state.userId) return;
+            const docRef = doc(db, `artifacts/${appId}/users/${state.userId}/alchemistProfile/profile`);
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().name) {
+                    state.playerName = docSnap.data().name;
+                    showModeSelection();
+                } else {
+                    loginModal.style.display = 'flex';
+                }
+            } catch (error) {
+                console.error("Error loading player profile:", error);
+                loginModal.style.display = 'flex';
+            }
+        }
+
+        async function savePlayerProfile(name) {
+            if (!state.userId || !name) return;
+            state.playerName = name;
+            const docRef = doc(db, `artifacts/${appId}/users/${state.userId}/alchemistProfile/profile`);
+            try {
+                await setDoc(docRef, { name: name }, { merge: true });
+            } catch (error) { console.error("Error saving player profile:", error); }
+        }
+
+        async function saveScoreToLeaderboard() {
+            if (!state.userId || !state.playerName) return;
+            const leaderboardCollection = `artifacts/${appId}/public/data/leaderboard`;
+            const userScoreRef = doc(db, leaderboardCollection, state.userId);
+            try {
+                const docSnap = await getDoc(userScoreRef);
+                const currentHighScore = docSnap.exists() ? docSnap.data().score : 0;
+                if (state.score > currentHighScore) {
+                    await setDoc(userScoreRef, { name: state.playerName, score: state.score, userId: state.userId });
+                }
+            } catch (error) {
+                console.error("Error saving score to leaderboard:", error);
+            }
+        }
+        
+        async function displayLeaderboard() {
+            leaderboardList.innerHTML = '<p class="text-center text-amber-900/70">กำลังโหลด...</p>';
+            leaderboardModal.style.display = 'flex';
+            const leaderboardCollection = `artifacts/${appId}/public/data/leaderboard`;
+            try {
+                const q = query(collection(db, leaderboardCollection));
+                const querySnapshot = await getDocs(q);
+                let scores = [];
+                querySnapshot.forEach((doc) => { scores.push(doc.data()); });
+                scores.sort((a, b) => b.score - a.score);
+                leaderboardList.innerHTML = '';
+                if (scores.length === 0) {
+                    leaderboardList.innerHTML = '<p class="text-center text-amber-900/70">ยังไม่มีปรมาจารย์ในหอแห่งนี้</p>';
+                    return;
+                }
+                scores.slice(0, 10).forEach((entry, index) => {
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = 'flex justify-between items-center p-2 rounded-md';
+                    entryDiv.innerHTML = `<span class="font-bold text-amber-900">${index + 1}. ${entry.name}</span><span class="font-cinzel font-bold text-amber-800">${entry.score} คะแนน</span>`;
+                    leaderboardList.appendChild(entryDiv);
+                });
+            } catch (error) {
+                console.error("Error fetching leaderboard:", error);
+                leaderboardList.innerHTML = '<p class="text-center text-red-600">ไม่สามารถโหลดข้อมูลได้</p>';
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        startGameButton.addEventListener('click', async () => {
+            const name = playerNameInput.value.trim();
+            if (name) {
+                await savePlayerProfile(name);
+                showModeSelection();
+            } else {
+                playerNameInput.placeholder = "โปรดจารึกนามของท่าน!";
+                playerNameInput.classList.add('placeholder-red-500');
+            }
+        });
+
+        [modeMultipleChoiceBtn, modeRuneAssemblyBtn].forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                state.gameMode = e.currentTarget.dataset.mode;
+                resetGame();
+            });
+        });
+        
+        backToModesButton.addEventListener('click', showModeSelection);
+        transmuteButton.addEventListener('click', () => checkAnswer(null));
+        leaderboardButton.addEventListener('click', displayLeaderboard);
+        closeLeaderboardButton.addEventListener('click', () => { leaderboardModal.style.display = 'none'; });
+        playAgainButton.addEventListener('click', showModeSelection);
+
+        // --- INITIALIZATION ---
+        authenticateUser();
     </script>
 </body>
 </html>
